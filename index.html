@@ -290,100 +290,36 @@
         };
 
         class MusicSystem {
-                constructor() {
-                    this.audio = null;
-                    this.isPlaying = false;
-                    this.clickCount = 0;
-                    this.button = document.getElementById('music-button');
-                    this.init();
-                }
-                
-                init() {
-                    this.button.addEventListener('click', () => this.toggleMusic());
-                    // Crear el audio inmediatamente pero no reproducir
-                    this.createAudio();
-                }
-                
-                createAudio() {
-                    try {
-                        // PRUEBA CON DIFERENTES RUTAS - UNA DE ESTAS DEBERÍA FUNCIONAR
-                        const rutas = [
-                            'CuentodeHadas.mp3',                    // Ruta relativa
-                            '/CuentodeHadas.mp3',                    // Ruta absoluta desde raíz
-                            './CuentodeHadas.mp3',                   // Ruta relativa explícita
-                            window.location.origin + '/CuentodeHadas.mp3', // URL completa
-                            'https://cdn.pixabay.com/download/audio/2022/03/15/audio_f2b0b0b0b0.mp3' // Audio de prueba (borrar después)
-                        ];
-                        
-                        // Usar la primera ruta como principal
-                        this.audio = new Audio(rutas[0]);
-                        this.audio.loop = true;
-                        this.audio.volume = 0.5;
-                        
-                        // Eventos para depuración
-                        this.audio.addEventListener('loadeddata', () => {
-                            console.log('✅ Audio cargado correctamente');
-                            this.button.style.display = 'flex'; // Mostrar botón
-                        });
-                        
-                        this.audio.addEventListener('error', (e) => {
-                            console.error('❌ Error con ruta:', rutas[0]);
-                            console.error('Código de error:', this.audio.error ? this.audio.error.code : 'desconocido');
-                            
-                            // Intentar con la siguiente ruta
-                            this.tryNextRuta(rutas);
-                        });
-                        
-                    } catch (error) {
-                        console.error('Error creando audio:', error);
-                    }
-                }
-                
-                tryNextRuta(rutas, index = 1) {
-                    if (index >= rutas.length) {
-                        console.error('❌ Todas las rutas fallaron');
-                        this.button.style.display = 'none';
-                        return;
-                    }
-                    
-                    console.log('Intentando con ruta:', rutas[index]);
-                    this.audio = new Audio(rutas[index]);
+            constructor() {
+                this.audio = null; this.isPlaying = false; this.clickCount = 0;
+                this.button = document.getElementById('music-button'); this.init();
+            }
+            init() {
+                this.button.addEventListener('click', () => this.toggleMusic());
+                document.addEventListener('click', () => this.handleFirstClick());
+                document.addEventListener('touchstart', () => this.handleFirstClick());
+            }
+            async handleFirstClick() {
+                this.clickCount++; if (this.clickCount === 1) await this.initAudio();
+            }
+            async initAudio() {
+            try {
+                    this.audio = new Audio('\CuentodeHadas.mp3');
                     this.audio.loop = true;
-                    this.audio.volume = 0.5;
-                    
-                    this.audio.addEventListener('loadeddata', () => {
-                        console.log('✅ Audio cargado con ruta:', rutas[index]);
-                        this.button.style.display = 'flex';
-                    });
-                    
-                    this.audio.addEventListener('error', () => {
-                        this.tryNextRuta(rutas, index + 1);
-                    });
-                }
-                
-                async toggleMusic() {
-                    if (!this.audio) return;
-                    
-                    try {
-                        if (this.isPlaying) {
-                            this.audio.pause();
-                            this.isPlaying = false;
-                            this.button.textContent = '🎵';
-                            this.button.classList.remove('playing');
-                        } else {
-                            // Intentar reproducir
-                            await this.audio.play();
-                            this.isPlaying = true;
-                            this.button.textContent = '⏸️';
-                            this.button.classList.add('playing');
-                        }
-                    } catch (error) {
-                        console.error('Error reproduciendo:', error);
-                        // Si hay error, intentar reproducir con interacción del usuario
-                        alert('Haz clic en la página para reproducir la música');
-                    }
+                    this.audio.volume = 0.7;
+                    this.audio.preload = 'auto';
+                    this.audio.addEventListener('error', (e) => { this.button.style.display = 'none'; });
+                    setTimeout(() => { this.playMusic(); }, 1000);
+                } catch (error) { 
+                    this.button.style.display = 'none'; 
                 }
             }
+            async toggleMusic() { if (this.isPlaying) this.pauseMusic(); else await this.playMusic(); }
+            async playMusic() {
+                if (!this.audio) return; try { await this.audio.play(); this.isPlaying = true; this.button.textContent = '🎵'; this.button.classList.add('playing'); } catch (error) {}
+            }
+            pauseMusic() { if (!this.audio) return; this.audio.pause(); this.isPlaying = false; this.button.textContent = '🎵'; this.button.classList.remove('playing'); }
+        }
         
         function initCarousel() {
             const carousel = document.getElementById('imageCarousel'); if (!carousel) return;
@@ -529,8 +465,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
