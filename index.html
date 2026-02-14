@@ -209,7 +209,7 @@
 
     <div class="love-container">
         <div class="counter-container">
-            
+            <p>Nuestro tiempo juntos...</p>
             <div id="love-counter"></div>
         </div>
 
@@ -303,14 +303,24 @@
                 this.clickCount++; if (this.clickCount === 1) await this.initAudio();
             }
             async initAudio() {
-            try {
-                    this.audio = new Audio('/CuentodeHadas.mp3');
+                try {
+                    this.audio = new Audio('/CuentodeHadas.mp3'); // Cambiado a ruta absoluta
                     this.audio.loop = true;
                     this.audio.volume = 0.7;
                     this.audio.preload = 'auto';
-                    this.audio.addEventListener('error', (e) => { this.button.style.display = 'none'; });
-                    setTimeout(() => { this.playMusic(); }, 1000);
+                    
+                    // Intentar reproducir inmediatamente después del primer click
+                    try {
+                        await this.audio.play();
+                        this.isPlaying = true;
+                        this.button.textContent = '🎵';
+                        this.button.classList.add('playing');
+                    } catch (playError) {
+                        console.log('Esperando interacción del usuario...');
+                    }
+                    
                 } catch (error) { 
+                    console.error('Error cargando audio:', error);
                     this.button.style.display = 'none'; 
                 }
             }
@@ -465,6 +475,7 @@
     </script>
 </body>
 </html>
+
 
 
 
